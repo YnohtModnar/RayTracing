@@ -49,6 +49,7 @@ public:
 
   void compute()
   {
+    std::cout << "EYE POS "<< eye.position<<std::endl;
     eye.n = normalize(eye.position - eye.COI);
     eye.u = normalize(eye.v_up.cross(eye.n));
     eye.v = eye.n.cross(eye.u);

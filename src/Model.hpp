@@ -39,12 +39,19 @@ public:
 
     Vec3f position;
 
-    Model(){}
+    Model(){
+      position = Vec3f(0.f,0.f,0.f);
+    }
 
     // constructor, expects a filepath to a 3D model.
     Model(std::string const &path, bool gamma = false) : gammaCorrection(gamma)
     {
         loadModel(path);
+    }
+
+    void addMesh(Mesh mesh)
+    {
+      meshes.push_back(mesh);
     }
 
 
@@ -102,14 +109,19 @@ private:
             Vertex vertex;
             Vec3f vector; // we declare a placeholder vector since assimp uses its own vector class that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
             // positions
+
             vector.x = mesh->mVertices[i].x;
             vector.y = mesh->mVertices[i].y;
             vector.z = mesh->mVertices[i].z;
             vertex.position = vector;
             // normals
+            if(mesh->mNormals){
             vector.x = mesh->mNormals[i].x;
             vector.y = mesh->mNormals[i].y;
             vector.z = mesh->mNormals[i].z;
+            }else{
+              vector = Vec3f(0.f);
+            }
             vertex.normal = vector;
             // texture coordinates
             if(mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
@@ -125,14 +137,22 @@ private:
                 vertex.texCoords = Vec2f(0.0f);
 
             // tangent
+            if(mesh->mTangents){
             vector.x = mesh->mTangents[i].x;
             vector.y = mesh->mTangents[i].y;
             vector.z = mesh->mTangents[i].z;
+            }else{
+              vector = Vec3f(0.f);
+            }
             vertex.tangent = vector;
             // bitangent
+            if(mesh->mBitangents){
             vector.x = mesh->mBitangents[i].x;
             vector.y = mesh->mBitangents[i].y;
             vector.z = mesh->mBitangents[i].z;
+            }else{
+              vector = Vec3f(0.f);
+            }
             vertex.bitangent = vector;
 
             vertices.push_back(vertex);
