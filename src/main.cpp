@@ -23,6 +23,7 @@ main(
   Light light2;
   std::vector<Vertex> vertices;
   Vertex v;
+//  Model model(argv[1]);
   Model model;
   model.position = Vec3f(0,0,0);
   Cube cube;
@@ -49,12 +50,12 @@ main(
 
 
 
-  light1.position = Vec3f(0,0,10);
+  light1.position = Vec3f(3,3,10);
   light1.brightness = 2;
-  light1.color = cv::Vec3b(0,0,255);
-  light2.position = Vec3f(-1,3,11);
+  light1.color = cv::Vec3b(1.f,1.f,1.f);
+  light2.position = Vec3f(-3,-3,10);
   light2.brightness = 2;
-  light2.color = cv::Vec3b(255,0,255);
+  light2.color = cv::Vec3b(1.f,1.f,1.f);
 
   c.eye.position.x = 0.f;
   c.eye.position.y = 0.f;
@@ -65,7 +66,7 @@ main(
   rc.cam = c;
   rc.models.push_back(&model);
   rc.lights.push_back(light1);
-//  rc.lights.push_back(light2);
+  rc.lights.push_back(light2);
   rc.compute();
 
 

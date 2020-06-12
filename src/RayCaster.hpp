@@ -41,60 +41,46 @@ public:
       float temp_u, temp_v;
       float min = 999999.f;
       bool intersected = false;
-      cv::Vec3b color(-1,-1,-1);
+      cv::Vec3b color(0,0,0);
 
-      Vec3f rayPos = ray.origin + ray.length*ray.direction;
-      //auto& mesh = model->meshes[3];
-      for(auto& model : models)
-        for(auto& mesh : model->meshes)
-          for(auto& triangle : mesh.triangles)
-          {
-            Vec3f v0 =model->position + (mesh.translation * (mesh.rotation * (mesh.scale * triangle.V0->position)));
-            Vec3f v1 =model->position + (mesh.translation * (mesh.rotation * (mesh.scale * triangle.V1->position)));
-            Vec3f v2 =model->position + (mesh.translation * (mesh.rotation * (mesh.scale * triangle.V2->position)));
-            bool inter = intersect(ray.origin,ray.direction,v0, v1, v2, temp_u, temp_v, t);
-            if(inter){
-              if(t<min){
-                min =t;
-                u = temp_u;
-                v = temp_v;
-                intersected = true;
-                interTriangle = triangle;
-                interMesh = mesh;
-              }
-            }
-          }
+      if(depth > 2) return color;
+
+      intersected = intersection(ray, interMesh, interTriangle, u, v, t);
       // Get intersected triangle diffuse color
       if(intersected)
       {
-        color = interMesh.getDiffuse(interTriangle, u, v);
-      }
 
-      Vec3f pHit = ray.origin + min*ray.direction;
-      //Compute Reflection
-      if(intersected && depth<1)
-      {
+        Vec3f pHit = ray.origin + t*ray.direction;
+        //Compute Reflection and refraction
         auto N = interMesh.getNormal(interTriangle, u, v);
         float Ks = interMesh.getSpecular(interTriangle, u, v);
-        //for(auto light : lights){
-          auto L = -(N * pHit);
-          auto R = pHit + (L * 2)* N;
-          R = normalize(R);
-//          raydir - nhit * 2 * raydir.dot(nhit)
-          auto reflection = trace(Ray(pHit, R), depth + 1);
-          if(reflection!=cv::Vec3b(-1,-1,-1))
-            color = (1-Ks)*color + Ks*reflection;
+
+        auto L = -(N * pHit);
+        auto Refl = pHit + (L * 2)* N;
+        Refl = normalize(Refl);
+
+        for(auto& light : lights){
+          Vec3f ldirection = normalize(light.position-pHit);
+          Ray shadowRay(pHit, light.position-pHit);
+          float shadow = intersection(shadowRay, interMesh, interTriangle, u, v, t) ? 0.f : 1.f;;
+          color[0] += shadow * fabs(ldirection*N) * interMesh.getDiffuse(interTriangle, u, v)[0] * light.color[0];
+          color[1] += shadow * fabs(ldirection*N) * interMesh.getDiffuse(interTriangle, u, v)[1] * light.color[1];
+          color[2] += shadow * fabs(ldirection*N) * interMesh.getDiffuse(interTriangle, u, v)[2] * light.color[2];
+
+        }
+        auto reflection = trace(Ray(pHit, Refl), depth + 1);
+        color +=  Ks*reflection;
         //}
-      }
 
       // Compute Illumination
-      if (intersected) {
+/*
         int shadows(0);
         for(auto& light : lights){
           bool isShadow = false;
           Ray shadowRay(pHit, light.position-pHit);
+          isShadow = intersection(shadowRay, interMesh, interTriangle, u, v, t);
           float dump_u,dump_v,dump_t;
-          for(auto& model : models)
+          /*for(auto& model : models)
             for(auto& mesh : model->meshes)
               for(auto& triangle : mesh.triangles)
               {
@@ -106,9 +92,10 @@ public:
                   isShadow = true;
                   break;
                 }
-              }
-          if(!isShadow)
+              }*/
+  /*        if(isShadow)
           {
+            std::cout << "TEST" << std::endl;
             float l = (light.brightness/(light.brightness+distance(pHit,light.position)));
             color = l*color + (1-l)*color;
           }
@@ -116,12 +103,44 @@ public:
             shadows++;
         }
         if(shadows==lights.size())
-          color *=0;
+          color *=0;*/
       }
       return color;
     }
 
+    cv::Vec3b phong_direct(Ray& r, Mesh& mesh, Triangle& triangle)
+    {
+      cv::Vec3b color;
+      float t,u,v;
+      return color;
+    }
 
+    bool intersection(Ray & ray, Mesh& interMesh, Triangle& interTriangle, float &u, float &v,float &t)
+    {
+      float temp_u, temp_v, temp_t;
+      t = 999999.f;
+      bool intersected = false;
+      for(auto& model : models)
+        for(auto& mesh : model->meshes)
+          for(auto& triangle : mesh.triangles)
+          {
+            Vec3f v0 =model->position + (mesh.translation * (mesh.rotation * (mesh.scale * triangle.V0->position)));
+            Vec3f v1 =model->position + (mesh.translation * (mesh.rotation * (mesh.scale * triangle.V1->position)));
+            Vec3f v2 =model->position + (mesh.translation * (mesh.rotation * (mesh.scale * triangle.V2->position)));
+            bool inter = intersect(ray.origin,ray.direction,v0, v1, v2, temp_u, temp_v, temp_t);
+            if(inter){
+              if(temp_t<t){
+                u = temp_u;
+                v = temp_v;
+                t = temp_t;
+                intersected = true;
+                interTriangle = triangle;
+                interMesh = mesh;
+              }
+            }
+          }
+      return intersected;
+    }
 
     void compute()
     {

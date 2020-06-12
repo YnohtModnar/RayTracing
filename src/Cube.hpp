@@ -33,13 +33,13 @@ private:
     v7p = Vec3f(-0.5f, 0.5f, -0.5f);
 
     v0n = Vec3f(0.f,0.f,-1.f);
-    v1n = Vec3f(-1.f,-0.f,-0.f);
-    v2n = Vec3f(-0.f,-0.f,-1.f);
-    v3n = Vec3f(-0.f,0.f,1.f);
-    v4n = Vec3f(1.f,-0.f,0.f);
+    v1n = Vec3f(-1.f,0.f,0.f);
+    v2n = Vec3f(0.f,0.f,-1.f);
+    v3n = Vec3f(0.f,0.f,1.f);
+    v4n = Vec3f(1.f,0.f,0.f);
     v5n = Vec3f(1.f,0.f,0.f);
-    v6n = Vec3f(0.f,1.f,-0.f);
-    v7n = Vec3f(-0.f,-1.f,0.f);
+    v6n = Vec3f(0.f,1.f,0.f);
+    v7n = Vec3f(0.f,-1.f,0.f);
 
 
     v.position = v4p;
